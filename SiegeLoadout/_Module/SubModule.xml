@@ -1,0 +1,37 @@
+﻿<Module>
+  <Name value="Siege Loadout"/>
+  <Id value="SiegeLoadout"/>
+  <Version value="v1.0.1"/>
+  <Url value="https://www.nexusmods.com/mountandblade2bannerlord/mods/4729" />
+  <DefaultModule value="false"/>
+  <ModuleCategory value="Singleplayer"/>
+  <SingleplayerModule value="true"/>
+  <MultiplayerModule value="false"/>
+  <Official value="false"/>
+  <DependedModules>
+    <DependedModule Id="Bannerlord.UIExtenderEx" />
+    <DependedModule Id="Bannerlord.MBOptionScreen" />
+    <DependedModule Id="Native"/>
+    <DependedModule Id="SandBoxCore"/>
+    <DependedModule Id="Sandbox"/>
+    <DependedModule Id="StoryMode" />
+  </DependedModules>
+  <DependedModuleMetadatas>
+    <DependedModuleMetadata id="Bannerlord.UIExtenderEx" order="LoadBeforeThis" version="v2.2.12" />
+    <DependedModuleMetadata id="Bannerlord.MBOptionScreen" order="LoadBeforeThis" version="v4.7.11" />
+    <DependedModuleMetadata id="Native" order="LoadBeforeThis" version="1.0.0.*" />
+    <DependedModuleMetadata id="SandBoxCore" order="LoadBeforeThis" version="1.0.0.*" />
+    <DependedModuleMetadata id="Sandbox" order="LoadBeforeThis" version="1.0.0.*" />
+    <DependedModuleMetadata id="StoryMode" order="LoadBeforeThis" version="1.0.0.*" />
+    <DependedModuleMetadata id="CustomBattle" order="LoadBeforeThis" version="1.0.0.*" optional="true" />
+  </DependedModuleMetadatas>
+  <SubModules>
+    <SubModule>
+      <Name value="SiegeLoadout"/>
+      <DLLName value="SiegeLoadout.dll"/>
+      <SubModuleClassType value="SiegeLoadout.Main"/>
+      <Tags />
+    </SubModule>
+  </SubModules>
+  <Xmls/>
+</Module>
