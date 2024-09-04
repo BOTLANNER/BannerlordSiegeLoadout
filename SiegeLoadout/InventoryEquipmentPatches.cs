@@ -298,7 +298,7 @@ namespace SiegeLoadout
         private static FieldInfo _transactionHistoryField = AccessTools.Field(typeof(InventoryLogic), "_transactionHistory");
         private static MethodInfo recordTransaction = AccessTools.Method(_transactionHistoryField.FieldType, "RecordTransaction");
 
-        public static void RecordTransaction(this InventoryLogic inventoryLogic, ItemRosterElement elementToTransfer, bool isSelling, int price)
+        public static void RecordTransaction(this InventoryLogic inventoryLogic, EquipmentElement elementToTransfer, bool isSelling, int price)
         {
             var _transactionHistory = _transactionHistoryField.GetValue(inventoryLogic);
             recordTransaction.Invoke(_transactionHistory, new object[] { elementToTransfer, isSelling, price });
@@ -421,7 +421,7 @@ namespace SiegeLoadout
                     int itemPrice = inventoryLogic.GetItemPrice(transferCommand.ElementToTransfer.EquipmentElement, flag1);
                     if (flag1 | flag)
                     {
-                        inventoryLogic.RecordTransaction(transferCommand.ElementToTransfer, flag, itemPrice);
+                        inventoryLogic.RecordTransaction(transferCommand.ElementToTransfer.EquipmentElement, flag, itemPrice);
                     }
                     if (inventoryLogic.IsTrading)
                     {
