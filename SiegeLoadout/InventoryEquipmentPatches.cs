@@ -418,7 +418,7 @@ namespace SiegeLoadout
                         transferCommandResults.AddRange(inventoryLogic.TransferItem(ref extended,ref transferCommand1));
                     }
                     ItemRosterElement itemRosterElement = transferCommand.ElementToTransfer;
-                    int itemPrice = inventoryLogic.GetItemPrice(transferCommand.ElementToTransfer, flag1);
+                    int itemPrice = inventoryLogic.GetItemPrice(transferCommand.ElementToTransfer.EquipmentElement, flag1);
                     if (flag1 | flag)
                     {
                         inventoryLogic.RecordTransaction(transferCommand.ElementToTransfer, flag, itemPrice);

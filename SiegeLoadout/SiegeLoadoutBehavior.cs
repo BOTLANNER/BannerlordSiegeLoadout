@@ -31,12 +31,12 @@ namespace SiegeLoadout
                             return Main.Settings!.EnableSiegeLoadouts && Main.Settings!.UseSiegeLoadoutInSallyOut;
                         case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.SiegeOutside:
                             return Main.Settings!.EnableSiegeLoadouts && Main.Settings!.UseSiegeLoadoutInSiegeOutside;
-                        case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.None:
-                        case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.FieldBattle:
-                        case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.Raid:
-                        case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.IsForcingVolunteers:
-                        case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.IsForcingSupplies:
-                        case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.AlleyFight:
+                        //case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.None:
+                        //case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.FieldBattle:
+                        //case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.Raid:
+                        //case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.IsForcingVolunteers:
+                        //case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.IsForcingSupplies:
+                        //case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.AlleyFight:
                         default:
                             return false;
                     }

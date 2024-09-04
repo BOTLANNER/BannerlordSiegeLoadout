@@ -72,12 +72,16 @@ namespace SiegeLoadout
                 }
                 Harmony.PatchAll();
 
-                _extender = new UIExtender(HarmonyDomain);
+                _extender = UIExtender.Create(HarmonyDomain);
                 _extender.Register(typeof(Main).Assembly);
                 _extender.Enable();
             }
             catch (System.Exception e)
             {
+                if (Debugger.IsAttached)
+                {
+                    Debugger.Break();
+                }
                 TaleWorlds.Library.Debug.PrintError(e.Message, e.StackTrace);
                 Debug.WriteDebugLineOnScreen(e.ToString());
                 Debug.SetCrashReportCustomString(e.Message);

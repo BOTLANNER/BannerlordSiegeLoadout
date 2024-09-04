@@ -2,12 +2,12 @@
   <Children>
     <ButtonWidget Id="SiegeFilter" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="67" SuggestedHeight="67" HorizontalAlignment="Center" Brush="InventoryFilterShieldsButton" ButtonType="Radio" ExtendCursorAreaLeft="-8" ExtendCursorAreaRight="-8" ExtendCursorAreaTop="-8" ExtendCursorAreaBottom="-8" GamepadNavigationIndex="1">
       <Children>
-        <HintWidget DataSource="{SiegeOutfitHint}" DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+        <HintWidget DataSource="{..\SiegeOutfitHint}" DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
       </Children>
     </ButtonWidget>
     <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="67" SuggestedHeight="67" HorizontalAlignment="Center" Brush="InventoryFilterWeaponsButton" ButtonType="Radio" ExtendCursorAreaLeft="-8" ExtendCursorAreaRight="-8" ExtendCursorAreaTop="-8" ExtendCursorAreaBottom="-8" GamepadNavigationIndex="0">
       <Children>
-        <HintWidget DataSource="{BattleOutfitHint}" DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+        <HintWidget DataSource="{..\BattleOutfitHint}" DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
       </Children>
     </ButtonWidget>
   </Children>

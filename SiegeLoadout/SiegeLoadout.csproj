@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.0.1</Version>
+    <Version>2.0.0</Version>
     <ModuleName>$(MSBuildProjectName)</ModuleName>
   </PropertyGroup>
 
@@ -15,15 +15,13 @@
 
   <!-- Versions of Major Dependencies (For Package References & SubModule.xml Substitution) -->
   <PropertyGroup>
-    <BuildResourcesVersion>1.0.1.80</BuildResourcesVersion>
-    <HarmonyVersion>2.2.2</HarmonyVersion>
+    <BuildResourcesVersion>1.1.0.108</BuildResourcesVersion>
+    <HarmonyVersion>2.3.3</HarmonyVersion>
     <MCM_V5 Condition="$(MCM_VERSION) != '4'">true</MCM_V5>
-    <MCM_V5 Condition="$(MCM_VERSION) == '4'">false</MCM_V5>
   </PropertyGroup>
 
   <PropertyGroup>
-    <MCMVersion Condition="$(MCM_V5) == 'true'">5.0.4</MCMVersion>
-    <MCMVersion Condition="$(MCM_V5) != 'true'">4.7.11</MCMVersion>
+    <MCMVersion Condition="$(MCM_V5) == 'true'">5.10.2</MCMVersion>
   </PropertyGroup>
 
   <!-- Game Versions for Stable and Beta -->
@@ -81,13 +79,13 @@
     </PackageReference>
     <PackageReference Include="Bannerlord.MCM" Version="$(MCMVersion)" />
     <PackageReference Include="Lib.Harmony" Version="$(HarmonyVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" IncludeAssets="compile" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" IncludeAssets="compile" />
     <!-- Enable NET5 Features on NET472 -->
-    <PackageReference Include="IsExternalInit" Version="1.0.1">
+    <PackageReference Include="IsExternalInit" Version="1.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Nullable" Version="1.3.0">
+    <PackageReference Include="Nullable" Version="1.3.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -96,6 +94,10 @@
   <ItemGroup>
     <!-- Bannerlord Native Assemblies -->
     <Reference Include="$(GameFolder)\bin\Win64_Shipping_Client\TaleWorlds.*.dll" Exclude="$(GameFolder)\bin\Win64_Shipping_Client\TaleWorlds.Native.dll">
+      <HintPath>%(Identity)</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="$(GameFolder)\bin\Win64_Shipping_Client\Newtonsoft.*.dll">
       <HintPath>%(Identity)</HintPath>
       <Private>False</Private>
     </Reference>
@@ -119,6 +121,13 @@
     <Reference Include="$(GameFolder)\Modules\Bannerlord.UIExtenderEx\bin\Win64_Shipping_Client\*.dll">
       <HintPath>%(Identity)</HintPath>
       <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Update="$(GameFolder)\bin\Win64_Shipping_Client\Newtonsoft.Json.dll">
+      <Private>true</Private>
+      <SpecificVersion>false</SpecificVersion>
     </Reference>
   </ItemGroup>
 

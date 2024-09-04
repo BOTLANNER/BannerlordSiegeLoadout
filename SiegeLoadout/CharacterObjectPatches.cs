@@ -36,7 +36,7 @@ namespace SiegeLoadout
                 return true;
             }
 
-            List<Equipment> equipment = new List<Equipment>()
+            MBList<Equipment> equipment = new MBList<Equipment>()
             {
                 __instance.HeroObject.BattleEquipment
 
@@ -47,7 +47,7 @@ namespace SiegeLoadout
                 equipment.Add(extended.SiegeEquipment);
             }
             equipment.Add(__instance.HeroObject.CivilianEquipment);
-            __result = equipment.GetReadOnlyList();
+            __result = equipment;
             return false;
         }
 
