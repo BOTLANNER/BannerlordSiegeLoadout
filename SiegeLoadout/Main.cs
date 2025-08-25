@@ -1,16 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using Bannerlord.UIExtenderEx;
+using HarmonyLib;
 using System.ComponentModel;
 using System.Diagnostics;
-
-using Bannerlord.UIExtenderEx;
-
-using HarmonyLib;
-
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
-
 using Debug = TaleWorlds.Library.Debug;
 
 namespace SiegeLoadout
@@ -104,7 +100,7 @@ namespace SiegeLoadout
 
                 if (!_loaded)
                 {
-                    InformationManager.DisplayMessage(new InformationMessage($"Loaded {DisplayName}", ImportantTextColor));
+                    InformationManager.DisplayMessage(new InformationMessage(new TextObject("{=NtYhm6pRNT}Loaded {DisplayName}").SetTextVariable("DisplayName", DisplayName).ToString(), ImportantTextColor));
                     _loaded = true;
 
 
@@ -131,7 +127,7 @@ namespace SiegeLoadout
 
                 if (game.GameType is Campaign)
                 {
-                    var initializer = (CampaignGameStarter) starterObject;
+                    var initializer = (CampaignGameStarter)starterObject;
                     AddBehaviors(initializer);
                 }
             }
