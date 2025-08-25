@@ -5,5 +5,27 @@
     </tags>
     <strings>
         <string id="siege_loadout_h_str_inventory_siege_outfit" text="Siege Outfit" />
+        <string id="NtYhm6pRNT" text="Loaded {DisplayName}" />
+        
+        <string id="NtYhm6pRNT" text="Enables using Siege Loadouts. Otherwise will always use Battle Loadout. [ Default: ON ]" />
+        <string id="4WFRIq4Ebk" text="Enable Siege Loadouts" />
+        <string id="v8RBUW5awV" text="General Settings" />
+        <string id="NkiKKZ3wju" text="Use armor from Siege loadout in Tournaments. Otherwise will use armor from Battle loadout. [ Default: OFF ]" />
+        <string id="tBh20PkZa0" text="Use Siege Armor In Tournaments" />
+        <string id="hqfjT9bhyn" text="Use Siege Loadout in Hideout missions. Otherwise will use Battle Loadout. [ Default: OFF ]" />
+        <string id="Hj4y4yjr22" text="Use Siege Loadout In Hideouts" />
+        <string id="KHifb2IZDy" text="Use Siege Loadout in Sally out during Siege. Otherwise will use Battle Loadout. [ Default: ON ]" />
+        <string id="PEAAATMzjJ" text="Use Siege Loadout In Sally Out" />
+        <string id="qTtFcul4Ja" text="Use Siege Loadout in outside battle during Siege. Otherwise will use Battle Loadout. [ Default: OFF ]" />
+        <string id="RppZ4sXtGV" text="Use Siege Loadout In Siege Outside" />
+        <string id="FhNb3mLbFK" text="Use full Siege Loadout. Otherwise will use Battle Loadout with populated Siege Loadout pieces. [ Default: OFF ]" />
+        <string id="40fWbiFKQR" text="Enforce Full Set" />
+        <string id="p97qWrYgJ7" text="Outfit Parts" />
+        <string id="N9sHgd8os6" text="When not enforcing full set, uses the mount and harness pieces from battle loadout. Otherwise will still enforce mount and harness pieces from Siege Loadout. [ Default: OFF ]" />
+        <string id="iOC7cCbuKi" text="Use Battle Loadout Mount and Harness" />
+        <string id="inQ6N0oOmd" text="When OFF, loadout buttons on inventory screen will be above mount swap buttons and hints near the center. When ON, loadout buttons will be below the mount swap buttons and above the Cancel,Reset, Done button bar. [ Default: OFF ]" />
+        <string id="jZ6DneHlBK" text="Buttons below mount swap" />
+        <string id="GMVfyevmyT" text="Button Layout" />
+        <string id="" text="" />
     </strings>
 </base>
