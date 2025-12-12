@@ -13,6 +13,7 @@ using TaleWorlds.Library;
 using TaleWorlds.LinQuick;
 
 using static TaleWorlds.CampaignSystem.Inventory.InventoryLogic;
+using static TaleWorlds.CampaignSystem.ViewModelCollection.Inventory.SPInventoryVM;
 
 namespace SiegeLoadout
 {
@@ -26,7 +27,7 @@ namespace SiegeLoadout
 
             if (__instance.GetPropertyValue(nameof(InventoryExtensionVM.Mixin)) is WeakReference<InventoryExtensionVM> weakReference && weakReference.TryGetTarget(out var mixin))
             {
-                if (__instance.IsInWarSet && !mixin.IsInBattleSet)
+                if (__instance.EquipmentMode == (int) EquipmentModes.Battle && !mixin.IsInBattleSet)
                 {
                     __result = ____currentCharacter.GetSiegeEquipment(false);
                     return false;
@@ -34,14 +35,15 @@ namespace SiegeLoadout
             }
 
 
-            if (!__instance.IsInWarSet)
-            {
-                __result = ____currentCharacter.FirstCivilianEquipment;
-                return false;
-            }
-            __result = ____currentCharacter.FirstBattleEquipment;
+            return true;
+            //if (__instance.EquipmentMode != (int) EquipmentModes.Battle)
+            //{
+            //    __result = ____currentCharacter.FirstCivilianEquipment;
+            //    return false;
+            //}
+            //__result = ____currentCharacter.FirstBattleEquipment;
 
-            return false;
+            //return false;
         }
 
         [HarmonyPatch(typeof(SPInventoryVM), "UnequipEquipment")]
@@ -51,11 +53,17 @@ namespace SiegeLoadout
 
             if (__instance.GetPropertyValue(nameof(InventoryExtensionVM.Mixin)) is WeakReference<InventoryExtensionVM> weakReference && weakReference.TryGetTarget(out var mixin))
             {
+                if (__instance.EquipmentMode != (int) EquipmentModes.Battle || !mixin.IsInBattleSet)
+                {
+                    return true;
+                }
+
                 if (itemVM == null || String.IsNullOrEmpty(itemVM.StringId))
                 {
-                    return false;
+                    return true;
                 }
-                var transferCommand = TransferCommandExtended.Transfer(1, InventoryLogic.InventorySide.Equipment, InventoryLogic.InventorySide.PlayerInventory, itemVM.ItemRosterElement, itemVM.ItemType, itemVM.ItemType, ____currentCharacter, !__instance.IsInWarSet, !mixin.IsInBattleSet);
+
+                var transferCommand = TransferCommandExtended.Transfer(1, InventoryLogic.InventorySide.BattleEquipment, InventoryLogic.InventorySide.PlayerInventory, itemVM.ItemRosterElement, itemVM.ItemType, itemVM.ItemType, ____currentCharacter, true);
                 ____inventoryLogic.AddTransferCommand(transferCommand);
 
                 return false;
@@ -67,15 +75,19 @@ namespace SiegeLoadout
         [HarmonyPrefix]
         private static bool UpdateCharacterArmorValues(ref SPInventoryVM __instance, ref CharacterObject ____currentCharacter)
         {
+
             if (__instance.GetPropertyValue(nameof(InventoryExtensionVM.Mixin)) is WeakReference<InventoryExtensionVM> weakReference && weakReference.TryGetTarget(out var mixin))
             {
-                __instance.CurrentCharacterArmArmor = ____currentCharacter.GetArmArmorSum(!__instance.IsInWarSet ? LoadoutSlot.Civilian : mixin.IsInBattleSet ? LoadoutSlot.Battle : LoadoutSlot.Siege);
-                __instance.CurrentCharacterBodyArmor = ____currentCharacter.GetBodyArmorSum(!__instance.IsInWarSet ? LoadoutSlot.Civilian : mixin.IsInBattleSet ? LoadoutSlot.Battle : LoadoutSlot.Siege);
-                __instance.CurrentCharacterHeadArmor = ____currentCharacter.GetHeadArmorSum(!__instance.IsInWarSet ? LoadoutSlot.Civilian : mixin.IsInBattleSet ? LoadoutSlot.Battle : LoadoutSlot.Siege);
-                __instance.CurrentCharacterLegArmor = ____currentCharacter.GetLegArmorSum(!__instance.IsInWarSet ? LoadoutSlot.Civilian : mixin.IsInBattleSet ? LoadoutSlot.Battle : LoadoutSlot.Siege);
-                __instance.CurrentCharacterHorseArmor = ____currentCharacter.GetHorseArmorSum(!__instance.IsInWarSet ? LoadoutSlot.Civilian : mixin.IsInBattleSet ? LoadoutSlot.Battle : LoadoutSlot.Siege);
+                if (__instance.EquipmentMode == (int) EquipmentModes.Battle && !mixin.IsInBattleSet)
+                {
+                    __instance.CurrentCharacterArmArmor = ____currentCharacter.GetArmArmorSum(LoadoutSlot.Siege);
+                    __instance.CurrentCharacterBodyArmor = ____currentCharacter.GetBodyArmorSum(LoadoutSlot.Siege);
+                    __instance.CurrentCharacterHeadArmor = ____currentCharacter.GetHeadArmorSum(LoadoutSlot.Siege);
+                    __instance.CurrentCharacterLegArmor = ____currentCharacter.GetLegArmorSum(LoadoutSlot.Siege);
+                    __instance.CurrentCharacterHorseArmor = ____currentCharacter.GetHorseArmorSum(LoadoutSlot.Siege);
+                    return false;
+                }
 
-                return false;
             }
             return true;
         }
@@ -86,6 +98,11 @@ namespace SiegeLoadout
         {
             if (__instance.GetPropertyValue(nameof(InventoryExtensionVM.Mixin)) is WeakReference<InventoryExtensionVM> weakReference && weakReference.TryGetTarget(out var mixin))
             {
+                if (__instance.EquipmentMode != (int) EquipmentModes.Battle || mixin.IsInBattleSet)
+                {
+                    return true;
+                }
+
                 EquipmentElement equipmentElement;
                 ItemObject.ItemTypeEnum? nullable;
                 ItemObject.ItemTypeEnum? nullable1;
@@ -97,7 +114,7 @@ namespace SiegeLoadout
                     return false;
                 }
                 SPItemVM sPItemVM = new SPItemVM();
-                sPItemVM.RefreshWith(itemVM, InventoryLogic.InventorySide.Equipment);
+                sPItemVM.RefreshWith(itemVM, InventoryLogic.InventorySide.BattleEquipment);
                 if (!__instance.IsItemEquipmentPossible(sPItemVM))
                 {
                     return false;
@@ -107,11 +124,11 @@ namespace SiegeLoadout
                 {
                     return false;
                 }
-                bool flag = (itemFromIndex == null || itemFromIndex.ItemType == EquipmentIndex.None ? false : itemVM.InventorySide == InventoryLogic.InventorySide.Equipment);
+                bool flag = (itemFromIndex == null || itemFromIndex.ItemType == EquipmentIndex.None ? false : itemVM.InventorySide == InventoryLogic.InventorySide.BattleEquipment);
                 if (!flag)
                 {
                     EquipmentIndex equipmentIndex = EquipmentIndex.None;
-                    if (itemVM.ItemRosterElement.EquipmentElement.Item.Type == ItemObject.ItemTypeEnum.Shield && itemVM.InventorySide != InventoryLogic.InventorySide.Equipment)
+                    if (itemVM.ItemRosterElement.EquipmentElement.Item.Type == ItemObject.ItemTypeEnum.Shield && itemVM.InventorySide != InventoryLogic.InventorySide.BattleEquipment)
                     {
                         EquipmentIndex equipmentIndex1 = EquipmentIndex.WeaponItemBeginSlot;
                         while (equipmentIndex1 <= EquipmentIndex.NumAllWeaponSlots)
@@ -170,11 +187,11 @@ namespace SiegeLoadout
                     }
                 }
                 List<TransferCommandExtended> transferCommands = new List<TransferCommandExtended>();
-                var transferCommand = TransferCommandExtended.Transfer(1, itemVM.InventorySide, InventoryLogic.InventorySide.Equipment, sPItemVM.ItemRosterElement, sPItemVM.ItemType, __instance.TargetEquipmentType, ____currentCharacter, !__instance.IsInWarSet, !mixin.IsInBattleSet);
+                var transferCommand = TransferCommandExtended.Transfer(1, itemVM.InventorySide, InventoryLogic.InventorySide.BattleEquipment, sPItemVM.ItemRosterElement, sPItemVM.ItemType, __instance.TargetEquipmentType, ____currentCharacter, __instance.EquipmentMode == (int) EquipmentModes.Battle && !mixin.IsInBattleSet);
                 transferCommands.Add(transferCommand);
                 if (flag)
                 {
-                    var transferCommand1 = TransferCommandExtended.Transfer(1, InventoryLogic.InventorySide.PlayerInventory, InventoryLogic.InventorySide.Equipment, itemFromIndex.ItemRosterElement, EquipmentIndex.None, sPItemVM.ItemType, ____currentCharacter, !__instance.IsInWarSet, !mixin.IsInBattleSet);
+                    var transferCommand1 = TransferCommandExtended.Transfer(1, InventoryLogic.InventorySide.PlayerInventory, InventoryLogic.InventorySide.BattleEquipment, itemFromIndex.ItemRosterElement, EquipmentIndex.None, sPItemVM.ItemType, ____currentCharacter, __instance.EquipmentMode == (int) EquipmentModes.Battle && !mixin.IsInBattleSet);
                     transferCommands.Add(transferCommand1);
                 }
                 ____inventoryLogic.AddTransferCommands(transferCommands);
@@ -189,9 +206,9 @@ namespace SiegeLoadout
             if (characterObject.IsHero)
             {
                 var extended = characterObject.HeroObject.AsExtended(extendIfNotFound: true);
-                return extended?.SiegeEquipment ?? (fallbackToBattle ? characterObject.HeroObject.BattleEquipment : new Equipment(false));
+                return extended?.SiegeEquipment ?? (fallbackToBattle ? characterObject.HeroObject.BattleEquipment : new Equipment(Equipment.EquipmentType.Battle));
             }
-            return characterObject.AllEquipments.FirstOrDefaultQ<Equipment>((Equipment e) => !e.IsCivilian);
+            return characterObject.GetAllEquipments().FirstOrDefaultQ<Equipment>((Equipment e) => !e.IsCivilian);
         }
 
         public static float GetArmArmorSum(this CharacterObject characterObject, LoadoutSlot loadoutSlot)
@@ -264,12 +281,12 @@ namespace SiegeLoadout
             }
         }
 
-        public static void AddTransferCommand(this InventoryLogic inventoryLogic,TransferCommandExtended command)
+        public static void AddTransferCommand(this InventoryLogic inventoryLogic, TransferCommandExtended command)
         {
             inventoryLogic.ProcessTransferCommand(command);
         }
 
-        public static void AddTransferCommands(this InventoryLogic inventoryLogic,IEnumerable<TransferCommandExtended> commands)
+        public static void AddTransferCommands(this InventoryLogic inventoryLogic, IEnumerable<TransferCommandExtended> commands)
         {
             foreach (var command in commands)
             {
@@ -279,7 +296,7 @@ namespace SiegeLoadout
 
         private static void ProcessTransferCommand(this InventoryLogic inventoryLogic, TransferCommandExtended command)
         {
-            inventoryLogic.OnAfterTransfer(inventoryLogic.TransferItem(ref command,ref command.Original));
+            inventoryLogic.OnAfterTransfer(inventoryLogic.TransferItem(ref command, ref command.Original));
         }
 
         private static MethodInfo onAfterTransfer = AccessTools.Method(typeof(InventoryLogic), "OnAfterTransfer");
@@ -289,7 +306,7 @@ namespace SiegeLoadout
             onAfterTransfer.Invoke(inventoryLogic, new object[] { resultList });
         }
 
-        
+
         private static FieldInfo _rostersField = AccessTools.Field(typeof(InventoryLogic), "_rosters");
         private static ItemRoster[] _rosters(this InventoryLogic inventoryLogic)
         {
@@ -326,17 +343,21 @@ namespace SiegeLoadout
         }
 
 
-        private static bool DoesTransferItemExistExtended(this InventoryLogic inventoryLogic,ref TransferCommandExtended transferCommandExtended)
+        private static bool DoesTransferItemExistExtended(this InventoryLogic inventoryLogic, ref TransferCommandExtended transferCommandExtended)
         {
             if (transferCommandExtended.Original.FromSide == InventorySide.OtherInventory || transferCommandExtended.Original.FromSide == InventorySide.PlayerInventory)
             {
                 return inventoryLogic.DoesTransferItemExist(ref transferCommandExtended.Original);
             }
-            if (transferCommandExtended.Original.FromSide == InventorySide.Equipment)
+            if (transferCommandExtended.Original.FromSide == InventoryLogic.InventorySide.None)
             {
-                if (transferCommandExtended.CharacterEquipment[(int) transferCommandExtended.Original.FromEquipmentIndex].Item != null)
+                return false;
+            }
+            if (transferCommandExtended.Original.FromSide == InventorySide.BattleEquipment)
+            {
+                if (transferCommandExtended.FromSideEquipment[(int) transferCommandExtended.Original.FromEquipmentIndex].Item != null)
                 {
-                    return transferCommandExtended.Original.ElementToTransfer.EquipmentElement.IsEqualTo(transferCommandExtended.CharacterEquipment[(int) transferCommandExtended.Original.FromEquipmentIndex]);
+                    return transferCommandExtended.Original.ElementToTransfer.EquipmentElement.IsEqualTo(transferCommandExtended.FromSideEquipment[(int) transferCommandExtended.Original.FromEquipmentIndex]);
                 }
                 return false;
             }
@@ -349,11 +370,20 @@ namespace SiegeLoadout
             {
                 return false;
             }
-            if (fromSide == InventoryLogic.InventorySide.Equipment)
+            if (IsEquipmentSide(fromSide))
             {
                 return true;
             }
             return fromSide == InventoryLogic.InventorySide.PlayerInventory;
+        }
+
+        public static bool IsEquipmentSide(InventoryLogic.InventorySide side)
+        {
+            if (side == InventoryLogic.InventorySide.CivilianEquipment || side == InventoryLogic.InventorySide.BattleEquipment)
+            {
+                return true;
+            }
+            return side == InventoryLogic.InventorySide.StealthEquipment;
         }
 
         public static bool IsBuy(this InventoryLogic inventoryLogic, InventoryLogic.InventorySide fromSide, InventoryLogic.InventorySide toSide)
@@ -362,7 +392,7 @@ namespace SiegeLoadout
             {
                 return false;
             }
-            if (toSide == InventoryLogic.InventorySide.Equipment)
+            if (IsEquipmentSide(toSide))
             {
                 return true;
             }
@@ -388,19 +418,32 @@ namespace SiegeLoadout
         private static List<TransferCommandResult> TransferItem(this InventoryLogic inventoryLogic, ref TransferCommandExtended extended, ref TransferCommand transferCommand)
         {
             ItemRosterElement elementToTransfer;
+            object str;
             List<TransferCommandResult> transferCommandResults = new List<TransferCommandResult>();
-            Object[] str = new Object[4];
-            EquipmentElement equipmentElement = transferCommand.ElementToTransfer.EquipmentElement;
-            str[0] = equipmentElement.Item.Name.ToString();
-            str[1] = transferCommand.FromSide;
-            str[2] = transferCommand.ToSide;
-            str[3] = transferCommand.Amount;
-            Debug.Print(String.Format("TransferItem Name: {0} | From: {1} To: {2} | Amount: {3}", str), 0, Debug.DebugColor.White, 17592186044416L);
+            Object[] fromSide = new Object[4];
+            ItemObject item = transferCommand.ElementToTransfer.EquipmentElement.Item;
+            if (item != null)
+            {
+                str = item.Name.ToString();
+            }
+            else
+            {
+                str = null;
+            }
+            if (str == null)
+            {
+                str = "null";
+            }
+            fromSide[0] = str;
+            fromSide[1] = transferCommand.FromSide;
+            fromSide[2] = transferCommand.ToSide;
+            fromSide[3] = transferCommand.Amount;
+            Debug.Print(String.Format("TransferItem Name: {0} | From: {1} To: {2} | Amount: {3}", fromSide), 0, Debug.DebugColor.White, 17592186044416L);
             if (transferCommand.ElementToTransfer.EquipmentElement.Item != null && TransferIsMovementValid(ref transferCommand) && inventoryLogic.DoesTransferItemExistExtended(ref extended))
             {
                 int num = 0;
                 bool amount = false;
-                if (transferCommand.FromSide != InventoryLogic.InventorySide.Equipment && transferCommand.FromSide != InventoryLogic.InventorySide.None)
+                if (!InventoryLogic.IsEquipmentSide(transferCommand.FromSide) && transferCommand.FromSide != InventoryLogic.InventorySide.None)
                 {
                     ItemRoster itemRosters = inventoryLogic._rosters()[(int) transferCommand.FromSide];
                     elementToTransfer = transferCommand.ElementToTransfer;
@@ -412,16 +455,16 @@ namespace SiegeLoadout
                 bool flag1 = inventoryLogic.IsBuy(transferCommand.FromSide, transferCommand.ToSide);
                 for (int i = 0; i < transferCommand.Amount; i++)
                 {
-                    if (transferCommand.ToSide == InventoryLogic.InventorySide.Equipment && extended.CharacterEquipment[(int) transferCommand.ToEquipmentIndex].Item != null)
+                    if (InventoryLogic.IsEquipmentSide(transferCommand.ToSide) && extended.ToSideEquipment[(int) transferCommand.ToEquipmentIndex].Item != null)
                     {
-                        TransferCommand transferCommand1 = TransferCommand.Transfer(1, InventoryLogic.InventorySide.Equipment, InventoryLogic.InventorySide.PlayerInventory, new ItemRosterElement(extended.CharacterEquipment[(int) transferCommand.ToEquipmentIndex], 1), transferCommand.ToEquipmentIndex, EquipmentIndex.None, transferCommand.Character, transferCommand.IsCivilianEquipment);
-                        transferCommandResults.AddRange(inventoryLogic.TransferItem(ref extended,ref transferCommand1));
+                        TransferCommand transferCommand1 = TransferCommand.Transfer(1, transferCommand.ToSide, InventoryLogic.InventorySide.PlayerInventory, new ItemRosterElement(extended.ToSideEquipment[(int) transferCommand.ToEquipmentIndex], 1), transferCommand.ToEquipmentIndex, EquipmentIndex.None, transferCommand.Character);
+                        transferCommandResults.AddRange(inventoryLogic.TransferItem(ref extended, ref transferCommand1));
                     }
-                    ItemRosterElement itemRosterElement = transferCommand.ElementToTransfer;
-                    int itemPrice = inventoryLogic.GetItemPrice(transferCommand.ElementToTransfer.EquipmentElement, flag1);
+                    EquipmentElement equipmentElement = transferCommand.ElementToTransfer.EquipmentElement;
+                    int itemPrice = inventoryLogic.GetItemPrice(equipmentElement, flag1);
                     if (flag1 | flag)
                     {
-                        inventoryLogic.RecordTransaction(transferCommand.ElementToTransfer.EquipmentElement, flag, itemPrice);
+                        inventoryLogic.RecordTransaction(equipmentElement, flag, itemPrice);
                     }
                     if (inventoryLogic.IsTrading)
                     {
@@ -434,12 +477,11 @@ namespace SiegeLoadout
                             num -= itemPrice;
                         }
                     }
-                    if (transferCommand.FromSide == InventoryLogic.InventorySide.Equipment)
+                    if (InventoryLogic.IsEquipmentSide(transferCommand.FromSide))
                     {
-                        ItemRosterElement itemRosterElement1 = new ItemRosterElement(extended.CharacterEquipment[(int) transferCommand.FromEquipmentIndex], transferCommand.Amount);
-                        itemRosterElement1.Amount = itemRosterElement1.Amount - 1;
-
-                        extended.CharacterEquipment[(int) transferCommand.FromEquipmentIndex] = itemRosterElement1.EquipmentElement;
+                        ItemRosterElement itemRosterElement = new ItemRosterElement(extended.FromSideEquipment[(int) transferCommand.FromEquipmentIndex], transferCommand.Amount);
+                        itemRosterElement.Amount = itemRosterElement.Amount - 1;
+                        extended.FromSideEquipment[(int) transferCommand.FromEquipmentIndex] = itemRosterElement.EquipmentElement;
                     }
                     else if (transferCommand.FromSide == InventoryLogic.InventorySide.PlayerInventory || transferCommand.FromSide == InventoryLogic.InventorySide.OtherInventory)
                     {
@@ -447,11 +489,11 @@ namespace SiegeLoadout
                         elementToTransfer = transferCommand.ElementToTransfer;
                         itemRosters1.AddToCounts(elementToTransfer.EquipmentElement, -1);
                     }
-                    if (transferCommand.ToSide == InventoryLogic.InventorySide.Equipment)
+                    if (InventoryLogic.IsEquipmentSide(transferCommand.ToSide))
                     {
                         ItemRosterElement elementToTransfer1 = transferCommand.ElementToTransfer;
                         elementToTransfer1.Amount = 1;
-                        extended.CharacterEquipment[(int) transferCommand.ToEquipmentIndex] = elementToTransfer1.EquipmentElement;
+                        extended.ToSideEquipment[(int) transferCommand.ToEquipmentIndex] = elementToTransfer1.EquipmentElement;
                     }
                     else if (transferCommand.ToSide == InventoryLogic.InventorySide.PlayerInventory || transferCommand.ToSide == InventoryLogic.InventorySide.OtherInventory)
                     {
@@ -460,12 +502,11 @@ namespace SiegeLoadout
                         itemRosters2.AddToCounts(elementToTransfer.EquipmentElement, 1);
                     }
                 }
-                if (transferCommand.FromSide == InventoryLogic.InventorySide.Equipment)
+                if (InventoryLogic.IsEquipmentSide(transferCommand.FromSide))
                 {
-                    ItemRosterElement itemRosterElement2 = new ItemRosterElement(extended.CharacterEquipment[(int) transferCommand.FromEquipmentIndex], transferCommand.Amount);
-                    itemRosterElement2.Amount = itemRosterElement2.Amount - 1;
-
-                    transferCommandResults.Add(new TransferCommandResultExtended(transferCommand.FromSide, itemRosterElement2, -transferCommand.Amount, itemRosterElement2.Amount, transferCommand.FromEquipmentIndex, transferCommand.Character, transferCommand.IsCivilianEquipment, extended.IsSiegeEquipment));
+                    ItemRosterElement itemRosterElement1 = new ItemRosterElement(extended.FromSideEquipment[(int) transferCommand.FromEquipmentIndex], transferCommand.Amount);
+                    itemRosterElement1.Amount = itemRosterElement1.Amount - 1;
+                    transferCommandResults.Add(new TransferCommandResultExtended(transferCommand.FromSide, itemRosterElement1, -transferCommand.Amount, itemRosterElement1.Amount, transferCommand.FromEquipmentIndex, transferCommand.Character, extended.IsSiegeEquipment));
                 }
                 else if (transferCommand.FromSide == InventoryLogic.InventorySide.PlayerInventory || transferCommand.FromSide == InventoryLogic.InventorySide.OtherInventory)
                 {
@@ -475,20 +516,20 @@ namespace SiegeLoadout
                         elementToTransfer = transferCommand.ElementToTransfer;
                         int num2 = itemRosters3.FindIndexOfElement(elementToTransfer.EquipmentElement);
                         ItemRosterElement elementCopyAtIndex1 = inventoryLogic._rosters()[(int) transferCommand.FromSide].GetElementCopyAtIndex(num2);
-                        transferCommandResults.Add(new TransferCommandResultExtended(transferCommand.FromSide, elementCopyAtIndex1, -transferCommand.Amount, elementCopyAtIndex1.Amount, transferCommand.FromEquipmentIndex, transferCommand.Character, transferCommand.IsCivilianEquipment, extended.IsSiegeEquipment));
+                        transferCommandResults.Add(new TransferCommandResultExtended(transferCommand.FromSide, elementCopyAtIndex1, -transferCommand.Amount, elementCopyAtIndex1.Amount, transferCommand.FromEquipmentIndex, transferCommand.Character, extended.IsSiegeEquipment));
                     }
                     else
                     {
-                        InventoryLogic.InventorySide fromSide = transferCommand.FromSide;
+                        InventoryLogic.InventorySide inventorySide = transferCommand.FromSide;
                         elementToTransfer = transferCommand.ElementToTransfer;
-                        transferCommandResults.Add(new TransferCommandResultExtended(fromSide, new ItemRosterElement(elementToTransfer.EquipmentElement, 0), -transferCommand.Amount, 0, transferCommand.FromEquipmentIndex, transferCommand.Character, transferCommand.IsCivilianEquipment, extended.IsSiegeEquipment));
+                        transferCommandResults.Add(new TransferCommandResultExtended(inventorySide, new ItemRosterElement(elementToTransfer.EquipmentElement, 0), -transferCommand.Amount, 0, transferCommand.FromEquipmentIndex, transferCommand.Character, extended.IsSiegeEquipment));
                     }
                 }
-                if (transferCommand.ToSide == InventoryLogic.InventorySide.Equipment)
+                if (InventoryLogic.IsEquipmentSide(transferCommand.ToSide))
                 {
                     ItemRosterElement elementToTransfer2 = transferCommand.ElementToTransfer;
                     elementToTransfer2.Amount = 1;
-                    transferCommandResults.Add(new TransferCommandResultExtended(transferCommand.ToSide, elementToTransfer2, 1, 1, transferCommand.ToEquipmentIndex, transferCommand.Character, transferCommand.IsCivilianEquipment, extended.IsSiegeEquipment));
+                    transferCommandResults.Add(new TransferCommandResultExtended(transferCommand.ToSide, elementToTransfer2, 1, 1, transferCommand.ToEquipmentIndex, transferCommand.Character, extended.IsSiegeEquipment));
                 }
                 else if (transferCommand.ToSide == InventoryLogic.InventorySide.PlayerInventory || transferCommand.ToSide == InventoryLogic.InventorySide.OtherInventory)
                 {
@@ -496,7 +537,7 @@ namespace SiegeLoadout
                     elementToTransfer = transferCommand.ElementToTransfer;
                     int num3 = itemRosters4.FindIndexOfElement(elementToTransfer.EquipmentElement);
                     ItemRosterElement elementCopyAtIndex2 = inventoryLogic._rosters()[(int) transferCommand.ToSide].GetElementCopyAtIndex(num3);
-                    transferCommandResults.Add(new TransferCommandResultExtended(transferCommand.ToSide, elementCopyAtIndex2, transferCommand.Amount, elementCopyAtIndex2.Amount, transferCommand.ToEquipmentIndex, transferCommand.Character, transferCommand.IsCivilianEquipment, extended.IsSiegeEquipment));
+                    transferCommandResults.Add(new TransferCommandResultExtended(transferCommand.ToSide, elementCopyAtIndex2, transferCommand.Amount, elementCopyAtIndex2.Amount, transferCommand.ToEquipmentIndex, transferCommand.Character, extended.IsSiegeEquipment));
                 }
                 inventoryLogic.HandleDonationOnTransferItem(transferCommand.ElementToTransfer, transferCommand.Amount, flag1, flag);
                 inventoryLogic.SetTransactionDebt(inventoryLogic.TransactionDebt + num);

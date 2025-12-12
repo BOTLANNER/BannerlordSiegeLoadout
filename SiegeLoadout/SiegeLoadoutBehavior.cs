@@ -21,6 +21,11 @@ namespace SiegeLoadout
                 var mapEvent = MobileParty.MainParty?.MapEvent ?? MapEvent.PlayerMapEvent;
                 if (mapEvent != null)
                 {
+                    if (Main.Settings!.EnableSiegeLoadouts && Main.Settings!.UseSiegeLoadoutInNaval && mapEvent.IsNavalMapEvent)
+                    {
+                        return true;
+                    }
+
                     switch (mapEvent.EventType)
                     {
                         case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.Siege:
@@ -36,7 +41,11 @@ namespace SiegeLoadout
                         //case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.Raid:
                         //case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.IsForcingVolunteers:
                         //case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.IsForcingSupplies:
-                        //case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.AlleyFight:
+                        //case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.AlleyFight: ???
+                        case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.BlockadeBattle:
+                            return Main.Settings!.EnableSiegeLoadouts && Main.Settings!.UseSiegeLoadoutInBlockade;
+                        case TaleWorlds.CampaignSystem.MapEvents.MapEvent.BattleTypes.BlockadeSallyOutBattle:
+                            return Main.Settings!.EnableSiegeLoadouts && Main.Settings!.UseSiegeLoadoutInBlockadeSallyOut;
                         default:
                             return false;
                     }

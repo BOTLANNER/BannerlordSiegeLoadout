@@ -14,7 +14,7 @@ using TaleWorlds.Localization;
 
 namespace SiegeLoadout
 {
-    [ViewModelMixin(refreshMethodName: "RefreshValues")]
+    [ViewModelMixin(refreshMethodName: "RefreshValues", true)]
 
     public class InventoryExtensionVM : BaseViewModelMixin<SPInventoryVM>
 

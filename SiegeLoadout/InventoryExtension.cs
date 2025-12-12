@@ -9,7 +9,7 @@ using TaleWorlds.CampaignSystem.ComponentInterfaces;
 
 namespace SiegeLoadout
 {
-    [PrefabExtension("Inventory", "/Prefab/Window/InventoryScreenWidget/Children/ListPanel/Children/InventoryCenterPanelWidget/Children/ListPanel/Children/ButtonWidget[@Id='SwapPlacesButtonWidget']")]
+    [PrefabExtension("Inventory", "//ButtonWidget[@Id='SwapPlacesButtonWidget']")]
 
     public class InventoryExtensionAbove : PrefabExtensionInsertAsSiblingPatch
 
@@ -35,7 +35,7 @@ namespace SiegeLoadout
             return document;
         }
     }
-    [PrefabExtension("Inventory", "/Prefab/Window/InventoryScreenWidget/Children/ListPanel/Children/InventoryCenterPanelWidget/Children/ListPanel[@Id='WarningsAndSwapPlacesPanel']")]
+    [PrefabExtension("Inventory", "//ListPanel[@Id='WarningsAndSwapPlacesPanel']")]
 
     public class InventoryExtensionBelow : PrefabExtensionInsertAsSiblingPatch
 

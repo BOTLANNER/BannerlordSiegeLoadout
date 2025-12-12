@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 using HarmonyLib;
 
@@ -13,6 +14,10 @@ namespace SiegeLoadout
     [HarmonyPatch]
     public static class CharacterObjectPatches
     {
+        static PropertyInfo AllEquipmentsProp = AccessTools.Property(typeof(CharacterObject), nameof(AllEquipments));
+
+        public static MBReadOnlyList<Equipment>? GetAllEquipments(this CharacterObject __instance) => AllEquipmentsProp?.GetValue(__instance) as MBReadOnlyList<Equipment>;
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterObject), "AfterRegister")]
 
@@ -26,9 +31,9 @@ namespace SiegeLoadout
         }
 
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(CharacterObject), "get_AllEquipments")]
+        [HarmonyPatch(typeof(BasicCharacterObject), "get_AllEquipments")]
 
-        public static bool AllEquipments(ref CharacterObject __instance, ref MBReadOnlyList<Equipment> __result)
+        public static bool AllEquipments(ref CharacterObject __instance, ref MBReadOnlyList<Equipment> __result, MethodBase __originalMethod)
         {
             if (!__instance.IsHero)
             {
@@ -36,18 +41,15 @@ namespace SiegeLoadout
                 return true;
             }
 
-            MBList<Equipment> equipment = new MBList<Equipment>()
-            {
-                __instance.HeroObject.BattleEquipment
+            var originalResult = __originalMethod.Invoke(__instance, new object[] { }) as MBReadOnlyList<Equipment>;
 
-            };
+            MBList<Equipment> equipment = new(originalResult);
             var extended = __instance.HeroObject.AsExtended();
             if (extended != null)
             {
                 equipment.Add(extended.SiegeEquipment);
             }
-            equipment.Add(__instance.HeroObject.CivilianEquipment);
-            __result = equipment;
+            __result = new MBReadOnlyList<Equipment>(equipment);
             return false;
         }
 
@@ -64,13 +66,14 @@ namespace SiegeLoadout
                 var extended = __instance.HeroObject.AsExtended();
                 if (extended != null)
                 {
-                    equipment.Add(extended.SiegeEquipment);
+                    equipment.Insert(0, extended.SiegeEquipment);
                 }
                 __result = equipment.AsEnumerable();
                 return false;
             }
-            __result = __instance.AllEquipments.WhereQ<Equipment>((Equipment e) => !e.IsCivilian);
-            return false;
+            //__result = __instance.GetAllEquipments().WhereQ<Equipment>((Equipment e) => !e.IsCivilian);
+            //return false;
+            return true;
         }
 
         [HarmonyPrefix]
@@ -89,10 +92,34 @@ namespace SiegeLoadout
                 {
                     __result = extended.WithSiegeEquipment();
                     return false;
-                } 
+                }
             }
-            __result = __instance.HeroObject.BattleEquipment;
-            return false;
+            //__result = __instance.HeroObject.BattleEquipment;
+            //return false;
+            return true;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(CharacterObject), "get_FirstBattleEquipment")]
+        public static bool FirstBattleEquipment(ref CharacterObject __instance, ref Equipment __result)
+        {
+            if (!__instance.IsHero)
+            {
+                return true;
+            }
+            if (SiegeLoadoutBehavior.UseSiegeLoadouts)
+            {
+
+                var extended = __instance.HeroObject.AsExtended();
+                if (extended != null)
+                {
+                    __result = extended.WithSiegeEquipment();
+                    return false;
+                }
+            }
+            return true;
+            //__result = __instance.HeroObject.BattleEquipment;
+            //return false;
         }
     }
 

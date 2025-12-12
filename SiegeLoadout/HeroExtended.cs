@@ -21,7 +21,7 @@ namespace SiegeLoadout
             {
                 if (_equipment == null)
                 {
-                    _equipment = new Equipment(false);
+                    _equipment = new Equipment(Equipment.EquipmentType.Battle);
                 }
                 return _equipment;
             }
@@ -41,7 +41,7 @@ namespace SiegeLoadout
             if (!Main.Settings!.EnforceFullSet)
             {
                 var mergedEquipment = new Equipment(Hero.BattleEquipment);
-                if (this.SiegeEquipment != null && this.SiegeEquipment.IsValid && !this.SiegeEquipment.IsEmpty())
+                if (this.SiegeEquipment != null && !this.SiegeEquipment.IsEmpty())
                 {
                     if (!Main.Settings.UseBattleLoadoutMountAndHarness)
                     {

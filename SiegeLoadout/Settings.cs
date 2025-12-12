@@ -45,10 +45,28 @@ namespace SiegeLoadout
         [SettingPropertyGroup("General Settings")]
         public bool UseSiegeLoadoutInSiegeOutside { get; set; } = false;
 
+        private const string UseSiegeLoadoutInNaval_Hint = "Use Siege Loadout in all Naval missions. Otherwise will use Battle Loadout. [ Default: OFF ]";
+
+        [SettingPropertyBool("Use Siege Loadout In All Naval", HintText = UseSiegeLoadoutInNaval_Hint, RequireRestart = false, Order = 0, IsToggle = false)]
+        [SettingPropertyGroup("War Sails DLC Settings", GroupOrder = 1)]
+        public bool UseSiegeLoadoutInNaval { get; set; } = false;
+
+        private const string UseSiegeLoadoutInBlockade_Hint = "Use Siege Loadout in all Naval Blockade missions. Otherwise will use Battle Loadout unless the above is enabled for all Naval. [ Default: ON ]";
+
+        [SettingPropertyBool("Use Siege Loadout In Naval Blockades", HintText = UseSiegeLoadoutInBlockade_Hint, RequireRestart = false, Order = 1, IsToggle = false)]
+        [SettingPropertyGroup("War Sails DLC Settings")]
+        public bool UseSiegeLoadoutInBlockade { get; set; } = true;
+
+        private const string UseSiegeLoadoutInBlockadeSallyOut_Hint = "Use Siege Loadout in Blockade Sally out during Blockade. Otherwise will use Battle Loadout unless enabled for all Naval. [ Default: ON ]";
+
+        [SettingPropertyBool("Use Siege Loadout In Sally Out", HintText = UseSiegeLoadoutInBlockadeSallyOut_Hint, RequireRestart = false, Order = 2, IsToggle = false)]
+        [SettingPropertyGroup("War Sails DLC Settings")]
+        public bool UseSiegeLoadoutInBlockadeSallyOut { get; set; } = true;
+
         private const string EnforceFullSet_Hint = "Use full Siege Loadout. Otherwise will use Battle Loadout with populated Siege Loadout pieces. [ Default: OFF ]";
         
         [SettingPropertyBool("Enforce Full Set", HintText = EnforceFullSet_Hint, RequireRestart = false, Order = 5, IsToggle = false)]
-        [SettingPropertyGroup("Outfit Parts", GroupOrder = 1)]
+        [SettingPropertyGroup("Outfit Parts", GroupOrder = 2)]
         public bool EnforceFullSet { get; set; } = false;
 
         private const string UseBattleLoadoutMountAndHarness_Hint = "When not enforcing full set, uses the mount and harness pieces from battle loadout. Otherwise will still enforce mount and harness pieces from Siege Loadout. [ Default: OFF ]";
@@ -60,7 +78,7 @@ namespace SiegeLoadout
         private const string ButtonsBelowMountSwap_Hint = "When OFF, loadout buttons on inventory screen will be above mount swap buttons and hints near the center. When ON, loadout buttons will be below the mount swap buttons and above the Cancel,Reset, Done button bar. [ Default: OFF ]";
 
         [SettingPropertyBool("Buttons below mount swap", HintText = ButtonsBelowMountSwap_Hint, RequireRestart = false, Order = 7, IsToggle = false)]
-        [SettingPropertyGroup("Button Layout", GroupOrder = 2)]
+        [SettingPropertyGroup("Button Layout", GroupOrder = 3)]
         public bool ButtonsBelowMountSwap { get; set; } = false;
     }
 

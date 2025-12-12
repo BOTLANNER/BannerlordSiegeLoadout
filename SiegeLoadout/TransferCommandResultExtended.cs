@@ -18,39 +18,22 @@ namespace SiegeLoadout
         static TransferCommandResultExtended()
         {
             var harmony = new Harmony($"{Main.HarmonyDomain}.{nameof(TransferCommand).ToLower()}");
-            harmony.Patch(AccessTools.Method(typeof(TransferCommandResult), "get_TransferEquipment"), new HarmonyMethod(typeof(TransferCommandResultExtended), nameof(GetTransferEquipment)));
+            harmony.Patch(AccessTools.Method(typeof(TransferCommandResult), "get_ResultSideEquipment"), new HarmonyMethod(typeof(TransferCommandResultExtended), nameof(GetResultSideEquipment)));
         }
 
-        static bool GetTransferEquipment(ref Equipment? __result, ref TransferCommandResult __instance)
+        static bool GetResultSideEquipment(ref Equipment? __result, ref TransferCommandResult __instance)
         {
-            if (__instance is TransferCommandResultExtended resultExtended)
+            if (__instance is TransferCommandResultExtended resultExtended && resultExtended.IsSiegeEquipment)
             {
-                if (!resultExtended.IsCivilianEquipment)
+                if (resultExtended.ResultSide == InventoryLogic.InventorySide.BattleEquipment)
                 {
                     CharacterObject transferCharacter = resultExtended.TransferCharacter;
                     if (transferCharacter != null)
                     {
-                        if (resultExtended.IsSiegeEquipment)
-                        {
-                            __result = transferCharacter.GetSiegeEquipment();
-                        }
-                        else
-                        {
-                            __result = transferCharacter.FirstBattleEquipment;
-                        }
+                        __result = transferCharacter.GetSiegeEquipment();
                         return false;
                     }
-                    __result = null;
-                    return false;
                 }
-                CharacterObject characterObject = resultExtended.TransferCharacter;
-                if (characterObject != null)
-                {
-                    __result = characterObject.FirstCivilianEquipment;
-                    return false;
-                }
-                __result = null;
-                return false;
             }
             return true;
         }
@@ -59,7 +42,7 @@ namespace SiegeLoadout
         {
 
         }
-        public TransferCommandResultExtended(InventoryLogic.InventorySide resultSide, ItemRosterElement effectedItemRosterElement, int effectedNumber, int finalNumber, EquipmentIndex effectedEquipmentIndex, CharacterObject transferCharacter, bool isCivilianEquipment, bool isSiegeEquipment) : base(resultSide, effectedItemRosterElement, effectedNumber, finalNumber, effectedEquipmentIndex, transferCharacter, isCivilianEquipment)
+        public TransferCommandResultExtended(InventoryLogic.InventorySide resultSide, ItemRosterElement effectedItemRosterElement, int effectedNumber, int finalNumber, EquipmentIndex effectedEquipmentIndex, CharacterObject transferCharacter, bool isSiegeEquipment) : base(resultSide, effectedItemRosterElement, effectedNumber, finalNumber, effectedEquipmentIndex, transferCharacter)
         {
             this.IsSiegeEquipment = isSiegeEquipment;
         }
