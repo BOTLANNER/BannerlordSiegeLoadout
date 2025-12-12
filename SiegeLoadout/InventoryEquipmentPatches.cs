@@ -53,7 +53,7 @@ namespace SiegeLoadout
 
             if (__instance.GetPropertyValue(nameof(InventoryExtensionVM.Mixin)) is WeakReference<InventoryExtensionVM> weakReference && weakReference.TryGetTarget(out var mixin))
             {
-                if (__instance.EquipmentMode != (int) EquipmentModes.Battle || !mixin.IsInBattleSet)
+                if (__instance.EquipmentMode != (int) EquipmentModes.Battle || mixin.IsInBattleSet)
                 {
                     return true;
                 }
