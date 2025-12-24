@@ -17,14 +17,6 @@ namespace SiegeLoadout
 {
     public class Main : MBSubModuleBase
     {
-        /* Semantic Versioning (https://semver.org): */
-        public static readonly int SemVerMajor = 1;
-        public static readonly int SemVerMinor = 0;
-        public static readonly int SemVerPatch = 1;
-        public static readonly string? SemVerSpecial = null;
-        private static readonly string SemVerEnd = (SemVerSpecial is not null) ? "-" + SemVerSpecial : string.Empty;
-        public static readonly string Version = $"{SemVerMajor}.{SemVerMinor}.{SemVerPatch}{SemVerEnd}";
-
         public static readonly string Name = typeof(Main).Namespace;
         public static readonly string DisplayName = "Siege Loadout"; // to be shown to humans in-game
         public static readonly string HarmonyDomain = "com.b0tlanner.bannerlord." + Name.ToLower();
@@ -62,7 +54,7 @@ namespace SiegeLoadout
         protected override void OnSubModuleLoad()
         {
             try
-            {
+             {
                 base.OnSubModuleLoad();
                 Harmony = new Harmony(HarmonyDomain);
 
@@ -75,6 +67,8 @@ namespace SiegeLoadout
                 _extender = UIExtender.Create(HarmonyDomain);
                 _extender.Register(typeof(Main).Assembly);
                 _extender.Enable();
+
+                InventoryEquipmentPatches.PatchLate();
             }
             catch (System.Exception e)
             {

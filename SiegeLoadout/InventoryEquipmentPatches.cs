@@ -6,6 +6,7 @@ using HarmonyLib;
 
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Inventory;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Inventory;
 using TaleWorlds.Core;
@@ -20,6 +21,140 @@ namespace SiegeLoadout
     [HarmonyPatch]
     public static class InventoryEquipmentPatches
     {
+        private static readonly Type? PartyEquipmentType;
+        private static readonly PropertyInfo? CharacterEquipmentsProp;
+
+        static Dictionary<CharacterObject, Equipment[]>? GetCharacterEquipments(object instance)
+        {
+            return CharacterEquipmentsProp?.GetValue(instance) as Dictionary<CharacterObject, Equipment[]>;
+        }
+
+        static InventoryEquipmentPatches()
+        {
+            PartyEquipmentType = AccessTools.TypeByName("TaleWorlds.CampaignSystem.Inventory.InventoryLogic+PartyEquipment");
+            if (PartyEquipmentType != null)
+            {
+                CharacterEquipmentsProp = AccessTools.Property(PartyEquipmentType, "CharacterEquipments");
+
+                if (CharacterEquipmentsProp == null)
+                {
+                    return;
+                }
+
+                var InitializeCopyFromMethod = AccessTools.Method(PartyEquipmentType, nameof(InitializeCopyFrom));
+                if (InitializeCopyFromMethod != null)
+                {
+                    (Main.Harmony ??= new Harmony(Main.HarmonyDomain)).Patch(InitializeCopyFromMethod, prefix: new HarmonyMethod(typeof(InventoryEquipmentPatches), nameof(InitializeCopyFrom)));
+                }
+                var ResetEquipmentMethod = AccessTools.Method(PartyEquipmentType, nameof(ResetEquipment));
+                if (ResetEquipmentMethod != null)
+                {
+                    (Main.Harmony ??= new Harmony(Main.HarmonyDomain)).Patch(ResetEquipmentMethod, prefix: new HarmonyMethod(typeof(InventoryEquipmentPatches), nameof(ResetEquipment)));
+                }
+            }
+        }
+
+        public static void PatchLate()
+        {
+            Debug.Print("Patch late ensures static constructor is run at least after calling this", 0, Debug.DebugColor.Purple, 17592186044416L);
+        }
+
+        public static bool InitializeCopyFrom(MobileParty party, ref object __instance)
+        {
+            if (CharacterEquipmentsProp == null)
+            {
+                return true;
+            }
+
+            var CharacterEquipments = new Dictionary<CharacterObject, Equipment[]>();
+            CharacterEquipmentsProp.SetValue(__instance, CharacterEquipments);
+            for (int i = 0; i < party.MemberRoster.Count; i++)
+            {
+                CharacterObject character = party.MemberRoster.GetElementCopyAtIndex(i).Character;
+                if (character.IsHero)
+                {
+                    var extended = character.HeroObject?.AsExtended(extendIfNotFound: false);
+                    if (extended == null)
+                    {
+                        CharacterEquipments.Add(character, new Equipment[3]
+                        {
+                            new Equipment(character.FirstBattleEquipment),
+                            new Equipment(character.FirstCivilianEquipment),
+                            new Equipment(character.FirstStealthEquipment)
+                        });
+                    }
+                    else
+                    {
+                        CharacterEquipments.Add(character, new Equipment[4]
+                        {
+                            new Equipment(character.FirstBattleEquipment),
+                            new Equipment(character.FirstCivilianEquipment),
+                            new Equipment(character.FirstStealthEquipment),
+                            new Equipment(extended.SiegeEquipment)
+                        });
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static bool ResetEquipment(MobileParty ownerParty, ref object __instance)
+        {
+            var CharacterEquipments = GetCharacterEquipments(__instance);
+            if (CharacterEquipments == null)
+            {
+                return true;
+            }
+
+            foreach (KeyValuePair<CharacterObject, Equipment[]> characterEquipment in CharacterEquipments)
+            {
+                Equipment[] value = characterEquipment.Value;
+                var extended = characterEquipment.Key.HeroObject.AsExtended(extendIfNotFound: false);
+                var hadSiege = value.Length > 3;
+                var hasSiege = extended != null;
+                if (!hadSiege && hasSiege)
+                {
+                    // There was no siege equipment and might be now. Clear current.
+                    extended!.SiegeEquipment.FillFrom(new Equipment(Equipment.EquipmentType.Battle));
+                }
+
+                for (int i = 0; i < value.Length; i++)
+                {
+                    Equipment equipment = value[i];
+                    if (equipment.IsBattle && hadSiege && i == 3)
+                    {
+                        //var extended = characterEquipment.Key.HeroObject.AsExtended(extendIfNotFound: false);
+                        if (extended != null)
+                        {
+                            extended.SiegeEquipment.FillFrom(equipment);
+                        }
+                        else
+                        {
+                            characterEquipment.Key.FirstBattleEquipment.FillFrom(equipment);
+                        }
+                    }
+                    else if (equipment.IsBattle)
+                    {
+                        characterEquipment.Key.FirstBattleEquipment.FillFrom(equipment);
+                    }
+                    else if (equipment.IsCivilian)
+                    {
+                        characterEquipment.Key.FirstCivilianEquipment.FillFrom(equipment);
+                    }
+                    else if (equipment.IsStealth)
+                    {
+                        characterEquipment.Key.FirstStealthEquipment.FillFrom(equipment);
+                    }
+                    else
+                    {
+                        Debug.FailedAssert("Equipment type cannot be found!", "InventoryEquipmentPatches.cs", "ResetEquipment", 113);
+                    }
+                }
+            }
+            return false;
+        }
+
         [HarmonyPatch(typeof(SPInventoryVM), "get_ActiveEquipment")]
         [HarmonyPrefix]
         public static bool ActiveEquipment(ref Equipment? __result, ref SPInventoryVM __instance, ref CharacterObject ____currentCharacter)
@@ -65,6 +200,95 @@ namespace SiegeLoadout
 
                 var transferCommand = TransferCommandExtended.Transfer(1, InventoryLogic.InventorySide.BattleEquipment, InventoryLogic.InventorySide.PlayerInventory, itemVM.ItemRosterElement, itemVM.ItemType, itemVM.ItemType, ____currentCharacter, true);
                 ____inventoryLogic.AddTransferCommand(transferCommand);
+
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(SPInventoryVM), nameof(SellItem))]
+        [HarmonyPrefix]
+
+        private static bool SellItem(ref SPInventoryVM __instance, SPItemVM item, ref CharacterObject ____currentCharacter, ref InventoryLogic ____inventoryLogic, ref Stack<SPItemVM> ____equipAfterTransferStack)
+        {
+            if (__instance.GetPropertyValue(nameof(InventoryExtensionVM.Mixin)) is WeakReference<InventoryExtensionVM> weakReference && weakReference.TryGetTarget(out var mixin))
+            {
+
+                if (__instance.EquipmentMode != (int) EquipmentModes.Battle || mixin.IsInBattleSet)
+                {
+                    return true;
+                }
+
+                if (item == null || String.IsNullOrEmpty(item.StringId))
+                {
+                    return true;
+                }
+
+                InventoryLogic.InventorySide inventorySide = item.InventorySide;
+                int itemCount = item.ItemCount;
+                if (inventorySide == InventoryLogic.InventorySide.OtherInventory)
+                {
+                    inventorySide = InventoryLogic.InventorySide.PlayerInventory;
+                    ItemRosterElement? nullable = ____inventoryLogic.FindItemFromSide(InventoryLogic.InventorySide.PlayerInventory, item.ItemRosterElement.EquipmentElement);
+                    if (nullable.HasValue)
+                    {
+                        itemCount = nullable.Value.Amount;
+                    }
+                }
+                var transferCommand = TransferCommandExtended.Transfer(MathF.Min(__instance.TransactionCount, itemCount), inventorySide, InventoryLogic.InventorySide.OtherInventory, item.ItemRosterElement, item.ItemType, __instance.TargetEquipmentType, ____currentCharacter, true);
+                ____inventoryLogic.AddTransferCommand(transferCommand);
+
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(SPInventoryVM), nameof(BuyItem))]
+        [HarmonyPrefix]
+
+        private static bool BuyItem(ref SPInventoryVM __instance, SPItemVM item, ref CharacterObject ____currentCharacter, ref InventoryLogic ____inventoryLogic, ref Stack<SPItemVM> ____equipAfterTransferStack)
+        {
+            if (__instance.GetPropertyValue(nameof(InventoryExtensionVM.Mixin)) is WeakReference<InventoryExtensionVM> weakReference && weakReference.TryGetTarget(out var mixin))
+            {
+                if (__instance.EquipmentMode != (int) EquipmentModes.Battle || mixin.IsInBattleSet)
+                {
+                    return true;
+                }
+
+                if (item == null || String.IsNullOrEmpty(item.StringId))
+                {
+                    return true;
+                }
+
+                if (__instance.TargetEquipmentType != EquipmentIndex.None && item.ItemType != __instance.TargetEquipmentType && (__instance.TargetEquipmentType < EquipmentIndex.WeaponItemBeginSlot || __instance.TargetEquipmentType > EquipmentIndex.ExtraWeaponSlot || item.ItemType < EquipmentIndex.WeaponItemBeginSlot || item.ItemType > EquipmentIndex.ExtraWeaponSlot))
+                {
+                    return true;
+                }
+
+                if (__instance.TargetEquipmentType == EquipmentIndex.None)
+                {
+                    __instance.TargetEquipmentType = item.ItemType;
+                    if (item.ItemType >= EquipmentIndex.WeaponItemBeginSlot && item.ItemType <= EquipmentIndex.ExtraWeaponSlot)
+                    {
+                        //__instance.TargetEquipmentType = __instance.ActiveEquipment.GetWeaponPickUpSlotIndex(itemVM.ItemRosterElement.EquipmentElement, false);
+                        __instance.TargetEquipmentType = ____currentCharacter.GetSiegeEquipment(false)!.GetWeaponPickUpSlotIndex(item.ItemRosterElement.EquipmentElement, false);
+                    }
+                }
+                int itemCount = item.ItemCount;
+                if (item.InventorySide == InventoryLogic.InventorySide.PlayerInventory)
+                {
+                    ItemRosterElement? nullable = ____inventoryLogic.FindItemFromSide(InventoryLogic.InventorySide.OtherInventory, item.ItemRosterElement.EquipmentElement);
+                    if (nullable.HasValue)
+                    {
+                        itemCount = nullable.Value.Amount;
+                    }
+                }
+                var transferCommand = TransferCommandExtended.Transfer(MathF.Min(__instance.TransactionCount, itemCount), InventoryLogic.InventorySide.OtherInventory, InventoryLogic.InventorySide.PlayerInventory, item.ItemRosterElement, item.ItemType, __instance.TargetEquipmentType, ____currentCharacter, true);
+                ____inventoryLogic.AddTransferCommand(transferCommand);
+                if (__instance.EquipAfterBuy)
+                {
+                    ____equipAfterTransferStack.Push(item);
+                }
 
                 return false;
             }
@@ -409,6 +633,7 @@ namespace SiegeLoadout
 
 
         private static MethodInfo TransactionDebt = AccessTools.Method(typeof(InventoryLogic), "set_TransactionDebt");
+
         public static void SetTransactionDebt(this InventoryLogic inventoryLogic, int value)
         {
             TransactionDebt.Invoke(inventoryLogic, new object[] { value });

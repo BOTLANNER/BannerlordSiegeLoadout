@@ -55,6 +55,7 @@ namespace SiegeLoadout
 
                     UpdateRightCharacter();
                     Game.Current.EventManager.TriggerEvent<InventoryEquipmentTypeChangedEvent>(new InventoryEquipmentTypeChangedEvent(value));
+                    RefreshMount();
                 }
             }
         }
@@ -97,6 +98,43 @@ namespace SiegeLoadout
         {
             base.OnRefresh();
             this.SiegeOutfitHint = new HintViewModel(new TextObject("{=siege_loadout_h_str_inventory_siege_outfit}Siege Outfit", null), null);
+
+            RefreshMount();
+        }
+
+        private void RefreshMount()
+        {
+            if (ViewModel != null)
+            {
+                var characterMountSlot = ViewModel.CharacterMountSlot;
+                bool hasMount = false;
+                bool warnSaddleMissing = ViewModel.NoSaddleWarned;
+                if (characterMountSlot != null)
+                {
+                    hasMount = !characterMountSlot.ItemRosterElement.IsEmpty;
+                }
+                else
+                {
+                    hasMount = false;
+                }
+                if (!hasMount)
+                {
+                    warnSaddleMissing = false;
+                }
+                else
+                {
+                    var characterMountArmorSlot = ViewModel.CharacterMountArmorSlot;
+                    if (characterMountArmorSlot != null)
+                    {
+                        warnSaddleMissing = characterMountArmorSlot.ItemRosterElement.IsEmpty;
+                    }
+                    else
+                    {
+                        warnSaddleMissing = false;
+                    }
+                }
+                ViewModel.NoSaddleWarned = warnSaddleMissing;
+            }
         }
 
         public override void OnFinalize()
