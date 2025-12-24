@@ -75,9 +75,15 @@ namespace SiegeLoadout
         [SettingPropertyGroup("Outfit Parts")]
         public bool UseBattleLoadoutMountAndHarness { get; set; } = false;
 
+        private const string UseBattleLoadoutPieces_Hint = "When not enforcing full set, uses the pieces from battle loadout where empty for Siege Loadout. Otherwise will still enforce all weapon pieces from Siege Loadout when one weapon is overriden. [ Default: OFF ]";
+        
+        [SettingPropertyBool("Use Battle Loadout Per Weapon Piece", HintText = UseBattleLoadoutPieces_Hint, RequireRestart = false, Order = 7, IsToggle = false)]
+        [SettingPropertyGroup("Outfit Parts")]
+        public bool UseBattleLoadoutPieces { get; set; } = false;
+
         private const string ButtonsBelowMountSwap_Hint = "When OFF, loadout buttons on inventory screen will be above mount swap buttons and hints near the center. When ON, loadout buttons will be below the mount swap buttons and above the Cancel,Reset, Done button bar. [ Default: OFF ]";
 
-        [SettingPropertyBool("Buttons below mount swap", HintText = ButtonsBelowMountSwap_Hint, RequireRestart = false, Order = 7, IsToggle = false)]
+        [SettingPropertyBool("Buttons below mount swap", HintText = ButtonsBelowMountSwap_Hint, RequireRestart = false, Order = 8, IsToggle = false)]
         [SettingPropertyGroup("Button Layout", GroupOrder = 3)]
         public bool ButtonsBelowMountSwap { get; set; } = false;
     }

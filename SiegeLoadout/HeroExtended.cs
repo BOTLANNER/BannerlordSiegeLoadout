@@ -46,15 +46,46 @@ namespace SiegeLoadout
                     if (!Main.Settings.UseBattleLoadoutMountAndHarness)
                     {
                         mergedEquipment[EquipmentIndex.Horse] = this.SiegeEquipment[EquipmentIndex.Horse];
-                        mergedEquipment[EquipmentIndex.HorseHarness] = this.SiegeEquipment[EquipmentIndex.HorseHarness]; 
+                        mergedEquipment[EquipmentIndex.HorseHarness] = this.SiegeEquipment[EquipmentIndex.HorseHarness];
                     }
                     if (this.SiegeEquipment.HasWeapon())
                     {
-                        mergedEquipment[EquipmentIndex.Weapon0] = this.SiegeEquipment[EquipmentIndex.Weapon0];
-                        mergedEquipment[EquipmentIndex.Weapon1] = this.SiegeEquipment[EquipmentIndex.Weapon1];
-                        mergedEquipment[EquipmentIndex.Weapon2] = this.SiegeEquipment[EquipmentIndex.Weapon2];
-                        mergedEquipment[EquipmentIndex.Weapon3] = this.SiegeEquipment[EquipmentIndex.Weapon3];
-                        mergedEquipment[EquipmentIndex.ExtraWeaponSlot] = this.SiegeEquipment[EquipmentIndex.ExtraWeaponSlot];
+                        if (Main.Settings.UseBattleLoadoutPieces)
+                        {
+                            var weap0 = this.SiegeEquipment[EquipmentIndex.Weapon0];
+                            if (!weap0.IsEqualTo(default(EquipmentElement)) && !weap0.IsEmpty && !weap0.IsInvalid())
+                            {
+                                mergedEquipment[EquipmentIndex.Weapon0] = weap0;
+                            }
+                            var weap1 = this.SiegeEquipment[EquipmentIndex.Weapon1];
+                            if (!weap1.IsEqualTo(default(EquipmentElement)) && !weap1.IsEmpty && !weap1.IsInvalid())
+                            {
+                                mergedEquipment[EquipmentIndex.Weapon1] = weap1;
+                            }
+                            var weap2 = this.SiegeEquipment[EquipmentIndex.Weapon2];
+                            if (!weap2.IsEqualTo(default(EquipmentElement)) && !weap2.IsEmpty && !weap2.IsInvalid())
+                            {
+                                mergedEquipment[EquipmentIndex.Weapon2] = weap2;
+                            }
+                            var weap3 = this.SiegeEquipment[EquipmentIndex.Weapon3];
+                            if (!weap3.IsEqualTo(default(EquipmentElement)) && !weap3.IsEmpty && !weap3.IsInvalid())
+                            {
+                                mergedEquipment[EquipmentIndex.Weapon3] = weap3;
+                            }
+                            var weapX = this.SiegeEquipment[EquipmentIndex.ExtraWeaponSlot];
+                            if (!weapX.IsEqualTo(default(EquipmentElement)) && !weapX.IsEmpty && !weapX.IsInvalid())
+                            {
+                                mergedEquipment[EquipmentIndex.ExtraWeaponSlot] = weapX;
+                            }
+                        }
+                        else
+                        {
+                            mergedEquipment[EquipmentIndex.Weapon0] = this.SiegeEquipment[EquipmentIndex.Weapon0];
+                            mergedEquipment[EquipmentIndex.Weapon1] = this.SiegeEquipment[EquipmentIndex.Weapon1];
+                            mergedEquipment[EquipmentIndex.Weapon2] = this.SiegeEquipment[EquipmentIndex.Weapon2];
+                            mergedEquipment[EquipmentIndex.Weapon3] = this.SiegeEquipment[EquipmentIndex.Weapon3];
+                            mergedEquipment[EquipmentIndex.ExtraWeaponSlot] = this.SiegeEquipment[EquipmentIndex.ExtraWeaponSlot];
+                        }
                     }
                     var head = this.SiegeEquipment[EquipmentIndex.Head];
                     if (!head.IsEqualTo(default(EquipmentElement)) && !head.IsEmpty && !head.IsInvalid())

@@ -1,7 +1,7 @@
 ﻿<Module>
   <Name value="Siege Loadout"/>
   <Id value="SiegeLoadout"/>
-  <Version value="v3.2.0"/>
+  <Version value="v3.3.0"/>
   <Url value="https://www.nexusmods.com/mountandblade2bannerlord/mods/4729" />
   <SingleplayerModule value="true"/>
   <MultiplayerModule value="false"/>
